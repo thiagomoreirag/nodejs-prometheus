@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-prometheus
+  labels:
+    app: nodejs-prometheus
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nodejs-prometheus
+  template:
+    metadata:
+      labels:
+        app: nodejs-prometheus
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - image: nodejs-prometheus
+        imagePullPolicy: Never
+        name: nodejs-prometheus
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "50m"
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
+        ports:
+        - containerPort: 3001
+          name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs-prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: nodejs-prometheus
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
+      name: http
